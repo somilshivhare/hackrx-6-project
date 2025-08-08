@@ -34,9 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request/Response models
+# Request/Response models (using simple dict validation for compatibility)
 class HackRxRequest(BaseModel):
-    documents: HttpUrl
+    documents: str  # Changed from HttpUrl to str for compatibility
     questions: List[str]
 
 class HackRxResponse(BaseModel):
