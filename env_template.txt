@@ -1,0 +1,6 @@
+# Google Gemini API Configuration
+# Get your API key from: https://makersuite.google.com/app/apikey
+GOOGLE_API_KEY=your-google-gemini-api-key-here
+
+# Optional: Environment configuration
+ENVIRONMENT=development 
