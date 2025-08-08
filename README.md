@@ -1,6 +1,6 @@
-# HackRx 6.0 - Document Q&A API
+# 🚀 HackRx 6.0 - Document Q&A API
 
-A FastAPI-based AI system that answers questions from PDF documents using Google Gemini, TF-IDF embeddings, and FAISS vector search.
+A FastAPI-based AI system that answers questions from PDF documents using Google Gemini, TF-IDF embeddings, and FAISS vector search for the HackRx 6.0 competition.
 
 ## 🎯 Project Overview
 
@@ -12,6 +12,7 @@ This project implements a complete document question-answering system for HackRx
 * ✅ Uses only approved tools (no LangChain, Haystack, etc.)
 * ✅ Provides clear step-by-step setup instructions
 * ✅ Optimized for cost-effectiveness and reliability
+* ✅ Ready for deployment on Render/Railway/Fly.io
 
 ## 🏗️ Architecture
 
@@ -23,6 +24,7 @@ hackrx_project/
 ├── llm_answerer_gemini.py    # Google Gemini prompting and answer generation
 ├── utils.py                  # Text chunking, tokenization, utilities
 ├── requirements.txt          # Python dependencies
+├── render.yaml              # Render deployment configuration
 ├── .env                     # Environment variables (create this)
 ├── .gitignore              # Git ignore file
 └── README.md               # This file
@@ -60,6 +62,12 @@ cp env_template.txt .env
 ```
 GOOGLE_API_KEY=your-google-gemini-api-key-here
 ```
+
+**Get your Google Gemini API key:**
+- Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+- Sign in with your Google account
+- Click "Create API Key"
+- Copy the API key (starts with `AIza...`)
 
 ### Step 3: Run the Application
 
@@ -167,16 +175,7 @@ Health check endpoint for deployment monitoring.
 
 ## 🌐 Deployment for HackRx
 
-### Step 1: Choose Platform
-
-Recommended platforms:
-
-* **Render** (Free tier available)
-* **Railway** (Simple deployment)
-* **Fly.io** (Good performance)
-* **Heroku** (Paid)
-
-### Step 2: Deploy
+### Option 1: Render (Recommended)
 
 1. **Push to GitHub:**
 ```bash
@@ -185,21 +184,42 @@ git commit -m "HackRx 6.0 submission with Google Gemini"
 git push origin master
 ```
 
-2. **Configure deployment:**
-   * Set environment variables (GOOGLE_API_KEY)
-   * Set build command: `pip install -r requirements.txt`
-   * Set start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+2. **Deploy on Render:**
+   - Go to [render.com](https://render.com)
+   - Create new workspace: `HackRx-6-Project`
+   - Connect your GitHub repo
+   - Create new Web Service
+   - Set environment variables:
+     - `GOOGLE_API_KEY`: Your Google Gemini API key
+   - Set build command: `pip install -r requirements.txt`
+   - Set start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
-### Step 3: Get Public URL
+3. **Get Public URL:**
+   Your API will be available at: `https://your-app-name.onrender.com/hackrx/run`
 
-Your API will be available at: `https://your-app-name.onrender.com/hackrx/run`
+### Option 2: Railway
 
-### Step 4: Submit to HackRx
+1. **Deploy directly:**
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
 
-1. Go to: https://dashboard.hackrx.in/submissions
-2. Paste your webhook URL: `https://your-app-name.onrender.com/hackrx/run`
-3. Add notes: "FastAPI + Google Gemini + TF-IDF + FAISS + PDFPlumber"
-4. Test with sample PDF and questions
+# Deploy
+railway login
+railway init
+railway up
+```
+
+### Option 3: Fly.io
+
+```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Deploy
+fly launch
+fly deploy
+```
 
 ## 🧪 Testing
 
@@ -216,10 +236,12 @@ curl -X POST http://127.0.0.1:8000/hackrx/run \
 }'
 ```
 
-### Sample PDF URLs for Testing
+### Deployment Testing
 
-* W3C Dummy PDF: `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`
-* Sample Insurance Policy: `https://example.com/sample-policy.pdf`
+```bash
+# Test your deployed API
+python test_deployment.py
+```
 
 ## 🔍 Troubleshooting
 
@@ -279,6 +301,15 @@ uvicorn main:app --reload --log-level debug
 * ✅ Documentation complete
 * ✅ Uses Google Gemini for reliability
 * ✅ Uses TF-IDF for cost-effectiveness
+
+## 📝 Submission Instructions
+
+1. **Deploy your API** to Render/Railway/Fly.io
+2. **Get your public URL** (e.g., `https://your-app.onrender.com/hackrx/run`)
+3. **Go to HackRx Dashboard**: https://dashboard.hackrx.in/submissions
+4. **Submit your webhook URL** with the endpoint
+5. **Add notes**: "FastAPI + Google Gemini + TF-IDF + FAISS + PDFPlumber"
+6. **Test with sample documents** provided by HackRx
 
 ## 📝 License
 

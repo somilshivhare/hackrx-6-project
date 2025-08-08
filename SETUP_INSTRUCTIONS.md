@@ -1,10 +1,11 @@
-# 🚀 HackRx 6.0 - Quick Setup Guide
+# 🚀 HackRx 6.0 - Complete Setup & Deployment Guide
 
 ## 📋 Prerequisites
 
 - Python 3.8+
 - Google Gemini API key
 - Git (for deployment)
+- GitHub account
 
 ## 🔧 Step-by-Step Setup
 
@@ -29,6 +30,12 @@ cp env_template.txt .env
 # GOOGLE_API_KEY=your-google-gemini-api-key-here
 ```
 
+**Get your Google Gemini API key:**
+- Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+- Sign in with your Google account
+- Click "Create API Key"
+- Copy the API key (starts with `AIza...`)
+
 ### 3. Run Locally (1 minute)
 
 ```bash
@@ -45,7 +52,7 @@ curl http://127.0.0.1:8000/
 
 # Test main endpoint
 curl -X POST http://127.0.0.1:8000/hackrx/run \
--H "Authorization: Bearer test-token" \
+-H "Authorization: Bearer c3d64f143a0f199ddaa8e69856eaaeffa4d101bf633c771f581e441ba15ae106" \
 -H "Content-Type: application/json" \
 -d '{
   "documents": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
@@ -64,19 +71,26 @@ python test_api.py
 
 1. **Push to GitHub:**
    ```bash
-   git init
    git add .
-   git commit -m "HackRx 6.0 submission"
-   git remote add origin https://github.com/yourusername/hackrx-project.git
-   git push -u origin main
+   git commit -m "HackRx 6.0 submission with Google Gemini"
+   git push origin master
    ```
 
 2. **Deploy on Render:**
    - Go to [render.com](https://render.com)
-   - Connect your GitHub repo
+   - Create new workspace: `HackRx-6-Project`
+   - Connect your GitHub repository
    - Create new Web Service
+   - Configure:
+     - **Name**: `hackrx-6-api`
+     - **Environment**: `Python 3`
+     - **Build Command**: `pip install -r requirements.txt`
+     - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
    - Set environment variable: `GOOGLE_API_KEY`
    - Deploy!
+
+3. **Get your public URL:**
+   `https://your-app-name.onrender.com/hackrx/run`
 
 ### Option 2: Railway
 
@@ -109,7 +123,7 @@ fly deploy
 2. **Submit to HackRx:**
    - Go to: https://dashboard.hackrx.in/submissions
    - Paste your webhook URL
-   - Add notes: "FastAPI + Google Gemini + FAISS + PDFPlumber"
+   - Add notes: "FastAPI + Google Gemini + TF-IDF + FAISS + PDFPlumber"
 
 ## ✅ Verification Checklist
 
@@ -127,6 +141,7 @@ fly deploy
 
 1. **"Google Gemini API key not found"**
    - Check `.env` file exists and has correct key
+   - Verify API key starts with `AIza...`
 
 2. **"Server not running"**
    - Run: `uvicorn main:app --reload`
@@ -138,6 +153,11 @@ fly deploy
 4. **"Import errors"**
    - Ensure virtual environment is activated
    - Run: `pip install -r requirements.txt`
+
+5. **"Deployment failed"**
+   - Check environment variables are set correctly
+   - Verify build command: `pip install -r requirements.txt`
+   - Verify start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 ## 🎯 Expected Response Format
 
@@ -151,6 +171,32 @@ fly deploy
     }
   ]
 }
+```
+
+## 🚀 Quick Deployment Commands
+
+```bash
+# 1. Setup local environment
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Configure API key
+cp env_template.txt .env
+# Edit .env and add your Google Gemini API key
+
+# 3. Test locally
+uvicorn main:app --reload
+
+# 4. Deploy to Render
+git add .
+git commit -m "HackRx 6.0 submission"
+git push origin master
+# Then deploy on render.com
+
+# 5. Submit to HackRx
+# Go to dashboard.hackrx.in/submissions
+# Submit your webhook URL
 ```
 
 ---
