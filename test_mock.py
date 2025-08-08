@@ -51,7 +51,7 @@ def test_mock_response():
     """)
     
     print("\n✅ API Structure is Correct!")
-    print("⚠️  Note: API calls will fail until OpenAI quota is resolved")
+    print("⚠️  Note: API calls will fail until Google Gemini quota is resolved")
 
 if __name__ == "__main__":
     test_mock_response()

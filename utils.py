@@ -31,7 +31,7 @@ def split_text_into_chunks(text: str, chunk_size: int = 500, overlap: int = 50) 
     text = clean_text(text)
     
     # Initialize tokenizer
-    encoding = tiktoken.get_encoding("cl100k_base")  # OpenAI's encoding
+    encoding = tiktoken.get_encoding("cl100k_base")  # Standard encoding for token counting
     
     # Tokenize the text
     tokens = encoding.encode(text)

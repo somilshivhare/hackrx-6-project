@@ -69,13 +69,13 @@ def check_environment():
     """Check if environment is properly configured"""
     print("🔍 Checking environment...")
     
-    # Check OpenAI API key
-    api_key = os.getenv("OPENAI_API_KEY")
-    if api_key and api_key != "sk-xxxxxxxxxxxxx":
-        print("✅ OpenAI API key configured")
+    # Check Google Gemini API key
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if api_key and api_key != "your-google-gemini-api-key-here":
+        print("✅ Google Gemini API key configured")
     else:
-        print("❌ OpenAI API key not configured properly")
-        print("Please set OPENAI_API_KEY in your .env file")
+        print("❌ Google Gemini API key not configured properly")
+        print("Please set GOOGLE_API_KEY in your .env file")
         return False
     
     # Check if server is running

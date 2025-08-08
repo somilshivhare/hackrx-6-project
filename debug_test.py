@@ -6,8 +6,8 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from document_parser import DocumentParser
-from embedder import Embedder
-from llm_answerer import LLMAnswerer
+from embedder_simple import SimpleEmbedder as Embedder
+from llm_answerer_gemini import LLMAnswerer
 
 # Load environment variables
 load_dotenv()

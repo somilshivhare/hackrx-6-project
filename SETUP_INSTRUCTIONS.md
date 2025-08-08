@@ -3,7 +3,7 @@
 ## 📋 Prerequisites
 
 - Python 3.8+
-- OpenAI API key
+- Google Gemini API key
 - Git (for deployment)
 
 ## 🔧 Step-by-Step Setup
@@ -25,8 +25,8 @@ pip install -r requirements.txt
 # Copy template
 cp env_template.txt .env
 
-# Edit .env file and add your OpenAI API key:
-# OPENAI_API_KEY=sk-your-actual-key-here
+# Edit .env file and add your Google Gemini API key:
+# GOOGLE_API_KEY=your-google-gemini-api-key-here
 ```
 
 ### 3. Run Locally (1 minute)
@@ -75,7 +75,7 @@ python test_api.py
    - Go to [render.com](https://render.com)
    - Connect your GitHub repo
    - Create new Web Service
-   - Set environment variable: `OPENAI_API_KEY`
+   - Set environment variable: `GOOGLE_API_KEY`
    - Deploy!
 
 ### Option 2: Railway
@@ -109,7 +109,7 @@ fly deploy
 2. **Submit to HackRx:**
    - Go to: https://dashboard.hackrx.in/submissions
    - Paste your webhook URL
-   - Add notes: "FastAPI + GPT-4 + FAISS + PDFPlumber"
+   - Add notes: "FastAPI + Google Gemini + FAISS + PDFPlumber"
 
 ## ✅ Verification Checklist
 
@@ -125,7 +125,7 @@ fly deploy
 
 **Common Issues:**
 
-1. **"OpenAI API key not found"**
+1. **"Google Gemini API key not found"**
    - Check `.env` file exists and has correct key
 
 2. **"Server not running"**

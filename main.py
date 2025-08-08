@@ -21,7 +21,7 @@ load_dotenv()
 
 app = FastAPI(
     title="HackRx 6.0 - Document Q&A API",
-    description="AI-powered document question answering system using GPT-4 and FAISS",
+    description="AI-powered document question answering system using Google Gemini and FAISS",
     version="1.0.0"
 )
 
@@ -117,7 +117,7 @@ async def run_hackrx(
                 faiss_index, question, top_k=5
             )
             
-            # Generate answer using GPT-4 with enhanced context
+                    # Generate answer using Google Gemini with enhanced context
             answer_data = await llm_answerer.generate_answer(
                 question, relevant_chunks, pdf_text
             )
@@ -157,7 +157,7 @@ async def health_check():
     """Health check endpoint for deployment monitoring"""
     return {
         "status": "healthy",
-        "openai_key_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "google_api_key_configured": bool(os.getenv("GOOGLE_API_KEY")),
         "timestamp": "2024-01-01T00:00:00Z"
     }
 
