@@ -4,7 +4,7 @@ Main application file with the /hackrx/run endpoint
 """
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, HttpUrl
+# Using simple dict validation instead of pydantic for Render compatibility
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
@@ -35,12 +35,17 @@ app.add_middleware(
 )
 
 # Request/Response models (using simple dict validation for compatibility)
-class HackRxRequest(BaseModel):
-    documents: str  # Changed from HttpUrl to str for compatibility
-    questions: List[str]
+from typing import Dict, Any
 
-class HackRxResponse(BaseModel):
-    answers: List[dict]
+# Simple request/response models without pydantic
+class HackRxRequest:
+    def __init__(self, documents: str, questions: List[str]):
+        self.documents = documents
+        self.questions = questions
+
+class HackRxResponse:
+    def __init__(self, answers: List[dict]):
+        self.answers = answers
 
 # Initialize components
 document_parser = DocumentParser()
@@ -68,9 +73,9 @@ async def root():
         "endpoint": "/hackrx/run"
     }
 
-@app.post("/hackrx/run", response_model=HackRxResponse)
+@app.post("/hackrx/run")
 async def run_hackrx(
-    request: HackRxRequest,
+    request: dict,
     team_token: str = Depends(verify_team_token)
 ):
     """
@@ -89,10 +94,14 @@ async def run_hackrx(
     }
     
     try:
+        # Extract data from request dict
+        documents = request.get("documents", "")
+        questions = request.get("questions", [])
+        
         # Step 1: Download and parse the PDF document
-        print(f"📄 Processing document: {request.documents}")
+        print(f"📄 Processing document: {documents}")
         doc_start = time.time()
-        pdf_text = await document_parser.parse_pdf_from_url(str(request.documents))
+        pdf_text = await document_parser.parse_pdf_from_url(str(documents))
         performance_metrics["document_processing_time"] = time.time() - doc_start
         
         if not pdf_text:
@@ -105,10 +114,10 @@ async def run_hackrx(
         performance_metrics["embedding_time"] = time.time() - embed_start
         
         # Step 3: Process each question with timing
-        print(f"❓ Processing {len(request.questions)} questions...")
+        print(f"❓ Processing {len(questions)} questions...")
         answers = []
         
-        for i, question in enumerate(request.questions):
+        for i, question in enumerate(questions):
             question_start = time.time()
             print(f"Processing question {i+1}: {question}")
             
@@ -146,7 +155,7 @@ async def run_hackrx(
         print(f"   - Average question time: {sum(performance_metrics['question_processing_times'])/len(performance_metrics['question_processing_times']):.2f}s")
         print(f"   - Total processing time: {performance_metrics['total_time']:.2f}s")
         
-        return HackRxResponse(answers=answers)
+        return {"answers": answers}
         
     except Exception as e:
         print(f"❌ Error processing request: {str(e)}")
