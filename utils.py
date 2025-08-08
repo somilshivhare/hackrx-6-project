@@ -3,7 +3,7 @@ Utility functions for text processing, chunking, and tokenization.
 """
 import re
 from typing import List, Dict, Any
-import tiktoken
+# import tiktoken  # Removed for Render compatibility
 
 def clean_text(text: str) -> str:
     """
@@ -30,35 +30,22 @@ def split_text_into_chunks(text: str, chunk_size: int = 500, overlap: int = 50) 
     # Clean the text first
     text = clean_text(text)
     
-    # Initialize tokenizer
-    encoding = tiktoken.get_encoding("cl100k_base")  # Standard encoding for token counting
+    # Clean the text first
+    text = clean_text(text)
     
-    # Tokenize the text
-    tokens = encoding.encode(text)
-    
+    # Simple word-based chunking (no tiktoken dependency)
+    words = text.split()
     chunks = []
-    start = 0
     
-    while start < len(tokens):
-        # Calculate end position for this chunk
-        end = start + chunk_size
-        
-        # Decode tokens back to text
-        chunk_tokens = tokens[start:end]
-        chunk_text = encoding.decode(chunk_tokens)
+    for i in range(0, len(words), chunk_size - overlap):
+        chunk_words = words[i:i + chunk_size]
+        chunk_text = ' '.join(chunk_words)
         
         # Clean the chunk text
         chunk_text = clean_text(chunk_text)
         
         if chunk_text.strip():
             chunks.append(chunk_text)
-        
-        # Move start position for next chunk (with overlap)
-        start = end - overlap
-        
-        # If we're near the end, break
-        if start >= len(tokens):
-            break
     
     return chunks
 
@@ -99,8 +86,8 @@ def count_tokens(text: str) -> int:
     """
     Count the number of tokens in a text string.
     """
-    encoding = tiktoken.get_encoding("cl100k_base")
-    return len(encoding.encode(text))
+    # Simple word count (no tiktoken dependency)
+    return len(text.split())
 
 def format_response(answer: str, source_clause: str, reasoning: str) -> dict:
     """
