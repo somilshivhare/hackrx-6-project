@@ -263,10 +263,12 @@ What information does it contain?</textarea>
       try{
         const r = await fetch('/hackrx/run', {
           method:'POST',
-          headers:{ 'Authorization':'Bearer demo-token', 'Content-Type':'application/json' },
+          headers:{ 'Authorization':'Bearer c3d64f143a0f199ddaa8e69856eaaeffa4d101bf633c771f581e441ba15ae106', 'Content-Type':'application/json' },
           body: JSON.stringify({ documents: pdfUrl, questions })
         });
-        const data = await r.json();
+        let data; try { data = await r.json(); } catch(parseErr){
+          out.innerHTML = `<div class=\"result error\"><strong>❌ Response Parse Error:</strong> ${parseErr?.message||parseErr}</div>`; btn.disabled=false; return;
+        }
         statusEl.textContent = '';
         if(r.ok && Array.isArray(data.answers)){
           let html = '<h3 class="muted">Results</h3>';
@@ -281,10 +283,11 @@ What information does it contain?</textarea>
           });
           out.innerHTML = html;
         } else {
-          out.innerHTML = `<div class=\"result error\"><strong>❌ Error:</strong> ${data.detail||'Failed to process document'}</div>`;
+          out.innerHTML = `<div class=\"result error\"><strong>❌ Error:</strong> ${data?.detail||'Failed to process document'}</div>`;
         }
       } catch(err){
-        out.innerHTML = `<div class=\"result error\"><strong>❌ Network Error:</strong> ${err.message}</div>`;
+        console.error(err);
+        out.innerHTML = `<div class=\"result error\"><strong>❌ Network Error:</strong> ${err?.message||err}</div>`;
       } finally { btn.disabled = false; }
     }
     btn.addEventListener('click', run);
