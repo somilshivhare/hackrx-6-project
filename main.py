@@ -4,6 +4,7 @@ Main application file with the /hackrx/run endpoint
 """
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -181,6 +182,116 @@ async def run_hackrx(
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 # Demo HTML endpoints removed: API-only mode
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo_page():
+    """Lightweight demo UI to test the API for sharing in posts."""
+    return """
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <title>HackRx 6.0 - Document Q&A Demo</title>
+  <meta name=\"description\" content=\"AI-powered PDF question answering demo (FastAPI + Gemini + TF-IDF)\" />
+  <meta property=\"og:title\" content=\"HackRx 6.0 - Document Q&A Demo\" />
+  <meta property=\"og:description\" content=\"Try the live PDF Q&A demo. Paste a PDF URL, ask questions, see cited answers.\" />
+  <style>
+    :root{--bg:#0f1226;--card:#15193a;--text:#e8e8f0;--muted:#aab;--accent:#7c5cfa;--ok:#2ecc71;--err:#ff5c5c}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0f1226,#1a1f4a);color:var(--text)}
+    .wrap{max-width:880px;margin:0 auto;padding:28px}
+    .hero{padding:22px 18px 10px;text-align:center}
+    .hero h1{margin:0 0 8px;font-size:28px}
+    .hero p{margin:0;color:var(--muted)}
+    .card{background:var(--card);border:1px solid #23284f;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);padding:18px;margin:18px 0}
+    label{font-weight:600;display:block;margin:10px 0 6px}
+    input,textarea{width:100%;background:#0f1330;color:var(--text);border:1px solid #2a2f60;border-radius:10px;padding:12px 14px}
+    textarea{min-height:110px;resize:vertical}
+    .row{display:grid;gap:14px;grid-template-columns:1fr}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;width:100%}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .muted{color:var(--muted)}
+    .result{background:#0f1330;border-left:4px solid var(--ok);padding:14px;border-radius:10px;margin:12px 0}
+    .result h3{margin:0 0 6px}
+    .error{border-left-color:var(--err)}
+    .flex{display:flex;gap:10px;align-items:center}
+    .badge{background:#0c1030;border:1px solid #2a2f60;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px}
+    .footer{padding:12px;text-align:center;color:var(--muted)}
+    code{background:#10143a;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class=\"wrap\">
+    <div class=\"hero\">
+      <h1>🚀 HackRx 6.0 — Document Q&A</h1>
+      <p class=\"muted\">FastAPI + Google Gemini + TF‑IDF · Live demo for LinkedIn</p>
+    </div>
+
+    <div class=\"card\">
+      <div class=\"row\">
+        <div>
+          <label for=\"pdfUrl\">PDF Document URL</label>
+          <input id=\"pdfUrl\" type=\"url\" placeholder=\"https://example.com/document.pdf\" value=\"https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf\" />
+        </div>
+        <div>
+          <label for=\"questions\">Your Questions (one per line)</label>
+          <textarea id=\"questions\">What is this document about?
+What type of document is this?
+What information does it contain?</textarea>
+        </div>
+        <button id=\"goBtn\" class=\"btn\">🔍 Analyze Document</button>
+        <div class=\"flex\"><span class=\"badge\">Endpoint</span><code>/hackrx/run</code></div>
+        <div id=\"status\" class=\"muted\"></div>
+        <div id=\"out\"></div>
+      </div>
+    </div>
+
+    <div class=\"footer\">Built by Somil Shivhare · Share this demo link in your post: <code>/demo</code></div>
+  </div>
+
+  <script>
+    const qs = (s)=>document.querySelector(s);
+    const btn = qs('#goBtn');
+    const out = qs('#out');
+    const statusEl = qs('#status');
+
+    async function run(){
+      const pdfUrl = qs('#pdfUrl').value.trim();
+      const questions = qs('#questions').value.split('\n').map(x=>x.trim()).filter(Boolean);
+      if(!pdfUrl || !questions.length){ alert('Provide PDF URL and at least one question'); return; }
+      btn.disabled = true; statusEl.textContent = 'Processing… this may take a few seconds'; out.innerHTML = '';
+      try{
+        const r = await fetch('/hackrx/run', {
+          method:'POST',
+          headers:{ 'Authorization':'Bearer demo-token', 'Content-Type':'application/json' },
+          body: JSON.stringify({ documents: pdfUrl, questions })
+        });
+        const data = await r.json();
+        statusEl.textContent = '';
+        if(r.ok && Array.isArray(data.answers)){
+          let html = '<h3 class="muted">Results</h3>';
+          data.answers.forEach((a,i)=>{
+            html += `
+              <div class=\"result\">
+                <h3>❓ Question ${i+1}</h3>
+                <div><strong>💬 Answer:</strong> ${a.answer||''}</div>
+                <div><strong>📄 Source:</strong> ${a.source_clause||''}</div>
+                <div><strong>🧠 Reasoning:</strong> ${a.reasoning||''}</div>
+              </div>`;
+          });
+          out.innerHTML = html;
+        } else {
+          out.innerHTML = `<div class=\"result error\"><strong>❌ Error:</strong> ${data.detail||'Failed to process document'}</div>`;
+        }
+      } catch(err){
+        out.innerHTML = `<div class=\"result error\"><strong>❌ Network Error:</strong> ${err.message}</div>`;
+      } finally { btn.disabled = false; }
+    }
+    btn.addEventListener('click', run);
+  </script>
+</body>
+</html>
+    """
 
 @app.get("/health")
 async def health_check():
