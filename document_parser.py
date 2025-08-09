@@ -111,7 +111,16 @@ class DocumentParser:
                             cleaned_text = self._clean_page_text(page_text)
                             extracted_text += cleaned_text + "\n\n"
                 
-                return extracted_text.strip()
+                extracted_text = extracted_text.strip()
+
+                # Fallback: if no text extracted (e.g., scanned PDF or tricky encoding), try PDFium text extraction
+                if not extracted_text:
+                    print("⚙️ PDFPlumber returned no text. Trying PDFium fallback...")
+                    pdfium_text = self._extract_text_with_pdfium(temp_file_path)
+                    if pdfium_text:
+                        extracted_text = pdfium_text.strip()
+                
+                return extracted_text
                 
             finally:
                 # Clean up temporary file
@@ -142,6 +151,23 @@ class DocumentParser:
         text = re.sub(r'\n\s*\n', '\n\n', text)
         
         return text.strip()
+
+    def _extract_text_with_pdfium(self, file_path: str) -> Optional[str]:
+        """Fallback text extraction using pypdfium2 for better compatibility."""
+        try:
+            import pypdfium2 as pdfium
+            extracted = []
+            pdf = pdfium.PdfDocument(file_path)
+            for page_index in range(len(pdf)):
+                page = pdf.get_page(page_index)
+                textpage = page.get_textpage()
+                page_text = textpage.get_text_range()
+                if page_text:
+                    extracted.append(self._clean_page_text(page_text))
+            return "\n\n".join(extracted)
+        except Exception as e:
+            print(f"❌ PDFium fallback failed: {str(e)}")
+            return None
     
     def extract_metadata(self, pdf_content: bytes) -> dict:
         """Extract metadata from PDF (optional enhancement)"""

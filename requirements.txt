@@ -4,3 +4,4 @@ google-generativeai
 pdfplumber
 requests 
 python-dotenv
+pypdfium2
