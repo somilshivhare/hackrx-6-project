@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "main.py": {
+      "maxDuration": 30
+    }
+  },
   "builds": [
     {
       "src": "main.py",
@@ -9,7 +14,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "main.py"
+      "dest": "/main.py"
     }
   ]
 }

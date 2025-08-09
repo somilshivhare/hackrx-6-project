@@ -6,13 +6,9 @@ import google.generativeai as genai
 import asyncio
 from typing import List, Dict, Any, Optional
 import os
-from dotenv import load_dotenv
 import re
 
 from utils import extract_clauses
-
-# Load environment variables
-load_dotenv()
 
 class LLMAnswerer:
     """Handles Gemini-based answer generation from document chunks"""

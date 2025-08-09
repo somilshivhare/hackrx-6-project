@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os
-from dotenv import load_dotenv
 import time
 import asyncio
 
@@ -15,9 +14,6 @@ from document_parser import DocumentParser
 from embedder_simple import SimpleEmbedder as Embedder
 from llm_answerer_gemini import LLMAnswerer
 from utils import format_response
-
-# Load environment variables
-load_dotenv()
 
 app = FastAPI(
     title="HackRx 6.0 - Document Q&A API",
