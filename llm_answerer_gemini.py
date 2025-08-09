@@ -3,12 +3,16 @@ LLM Answerer module using Google Gemini for generating answers from document chu
 Handles prompting, context processing, and structured response generation.
 """
 import google.generativeai as genai
+from dotenv import load_dotenv
 import asyncio
 from typing import List, Dict, Any, Optional
 import os
 import re
 
 from utils import extract_clauses
+
+# Load environment variables from a local .env file when present (for local/dev only)
+load_dotenv()
 
 class LLMAnswerer:
     """Handles Gemini-based answer generation from document chunks"""

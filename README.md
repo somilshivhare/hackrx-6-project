@@ -63,6 +63,8 @@ cp env_template.txt .env
 GOOGLE_API_KEY=your-google-gemini-api-key-here
 ```
 
+Note: The app auto-loads `.env` locally via `python-dotenv`.
+
 **Get your Google Gemini API key:**
 - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 - Sign in with your Google account
