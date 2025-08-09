@@ -128,11 +128,11 @@ QUALITY STANDARDS:
         for attempt in range(max_retries):
             try:
                 loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
+                response = await loop.run_in_executor(
                     None,
                     lambda: self.model.generate_content(prompt)
                 )
-                
+
                 return response.text.strip()
                 
             except Exception as e:
