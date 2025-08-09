@@ -1,31 +1,77 @@
-# Virtual environment
+# Virtual environment and cache
 venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
 # Development and testing files
 debug_test.py
 test_*.py
 test_*.txt
+*_test.py
+tests/
+testing/
 
 # Documentation and setup files
 README.md
 SETUP_INSTRUCTIONS.md
 VERCEL_DEPLOYMENT.md
 env_template.txt
+*.md
+docs/
+examples/
 
 # Alternative deployment configs
 Procfile
 render.yaml
 runtime.txt
+Dockerfile
+docker-compose.yml
+.dockerignore
 
 # Alternative requirements files
 requirements_minimal.txt
 requirements_simple.txt
+requirements-dev.txt
+dev-requirements.txt
 
 # System files
 .DS_Store
 .env
+.env.*
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Git
-.git/
-.gitignore
+# Large data files that shouldn't be in functions
+*.pdf
+*.csv
+*.json
+data/
+datasets/
+models/
+weights/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
