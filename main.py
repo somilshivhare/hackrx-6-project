@@ -4,6 +4,7 @@ Main application file with the /hackrx/run endpoint
 """
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -179,6 +180,140 @@ async def run_hackrx(
     except Exception as e:
         print(f"❌ Error processing request: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+
+@app.get("/demo", response_class=HTMLResponse)
+@app.get("/demo.html", response_class=HTMLResponse)
+@app.get("/index.html", response_class=HTMLResponse)
+async def demo_page():
+    """Interactive demo page"""
+    html_content = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackRx 6.0 - Document Q&A Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .header { text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        .demo-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #28a745; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .tech-item { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 HackRx 6.0 - Document Q&A</h1>
+        <p>AI-Powered Insurance Document Analysis by Somil Shivhare</p>
+    </div>
+    
+    <div class="demo-box">
+        <h2>📄 Live API Demo</h2>
+        <p><strong>Status:</strong> <span style="color: green;">✅ API Live & Running</span></p>
+        <p><strong>Endpoint:</strong> <code>https://hackrx-6-project-23a2.vercel.app/hackrx/run</code></p>
+        
+        <label>PDF Document URL:</label>
+        <input type="text" id="pdfUrl" value="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" placeholder="Enter PDF URL here...">
+        
+        <label>Your Questions (one per line):</label>
+        <textarea id="questions" rows="4" placeholder="What is this document about?&#10;What are the key terms?">What is this document about?
+What type of document is this?
+What information does it contain?</textarea>
+        
+        <button class="btn" onclick="testAPI()" style="width: 100%; margin-top: 10px;">🔍 Analyze Document with AI</button>
+        
+        <div id="result" style="display:none;"></div>
+    </div>
+    
+    <div class="demo-box">
+        <h2>🔧 Technical Architecture</h2>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <h3>🚀 FastAPI</h3>
+                <p>High-performance REST API framework</p>
+            </div>
+            <div class="tech-item">
+                <h3>🤖 Google Gemini</h3>
+                <p>Advanced language model for intelligent responses</p>
+            </div>
+            <div class="tech-item">
+                <h3>📊 TF-IDF</h3>
+                <p>Custom text similarity search engine</p>
+            </div>
+            <div class="tech-item">
+                <h3>☁️ Vercel</h3>
+                <p>Serverless deployment platform</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-box">
+        <h2>🎯 Features</h2>
+        <ul>
+            <li>✅ Process PDF documents from URLs</li>
+            <li>✅ Intelligent Q&A with source citations</li>
+            <li>✅ Built for insurance & legal analysis</li>
+            <li>✅ Real-time document processing</li>
+            <li>✅ Structured JSON responses</li>
+            <li>✅ Optimized for performance (< 250MB)</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            const pdfUrl = document.getElementById('pdfUrl').value;
+            const questions = document.getElementById('questions').value.split('\\n').filter(q => q.trim());
+            
+            if (!pdfUrl || questions.length === 0) {
+                alert('Please provide both PDF URL and questions');
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p style="text-align: center;">🔄 Processing document with AI... This may take 10-20 seconds.</p>';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/hackrx/run', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer c3d64f143a0f199ddaa8e69856eaaeffa4d101bf633c771f581e441ba15ae106',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ documents: pdfUrl, questions: questions })
+                });
+                
+                const data = await response.json();
+                
+                if (data.answers) {
+                    let html = '<h3>✅ AI Analysis Results:</h3>';
+                    data.answers.forEach((answer, i) => {
+                        html += `<div class="result" style="margin-bottom: 15px;">
+                            <strong>❓ Question ${i+1}:</strong> ${questions[i]}<br><br>
+                            <strong>💬 Answer:</strong> ${answer.answer}<br><br>
+                            <strong>📄 Source Clause:</strong> ${answer.source_clause}<br><br>
+                            <strong>🧠 AI Reasoning:</strong> ${answer.reasoning}
+                        </div>`;
+                    });
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="result" style="border-left-color: #dc3545;"><p>❌ <strong>Error:</strong> ${data.detail || 'Unknown error occurred'}</p><p>Try with a different PDF URL or check if the document is accessible.</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result" style="border-left-color: #dc3545;"><p>❌ <strong>Network Error:</strong> ${error.message}</p></div>`;
+            }
+        }
+    </script>
+
+    <div style="text-align: center; margin-top: 30px; color: #666;">
+        <p>Built for <strong>HackRx 6.0</strong> by <strong>Bajaj Finserv</strong></p>
+        <p>Created by Somil Shivhare | <a href="https://linkedin.com/in/somilshivhare" target="_blank">LinkedIn</a></p>
+    </div>
+</body>
+</html>
+    """
+    return html_content
 
 @app.get("/health")
 async def health_check():
