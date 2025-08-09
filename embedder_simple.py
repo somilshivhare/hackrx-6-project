@@ -173,9 +173,19 @@ class SimpleEmbedder:
             for idx in top_indices:
                 # Find the similarity score for this index
                 sim_score = next((sim for sim, i in similarities if i == idx), 0)
-                if sim_score > 0.1:  # Similarity threshold
+                # Use a very permissive threshold so we always have some context
+                if sim_score > 0.01:
                     similar_chunks.append(self.chunks[idx])
             
+            # Fallback: if nothing passed the threshold, still return the top_k chunks
+            if not similar_chunks:
+                for idx in top_indices:
+                    similar_chunks.append(self.chunks[idx])
+            
+            # Final safeguard: if for some reason we still have none, return first few chunks
+            if not similar_chunks and self.chunks:
+                similar_chunks = self.chunks[:max(3, min(top_k, len(self.chunks)))]
+
             print(f"🔍 Found {len(similar_chunks)} similar chunks for query")
             return similar_chunks
             

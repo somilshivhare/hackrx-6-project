@@ -82,7 +82,7 @@ class LLMAnswerer:
     
     def _create_prompt(self, question: str, context: str) -> str:
         """Create optimized prompt for Gemini with enhanced accuracy"""
-        return f"""You are an expert insurance and legal document analyst with deep expertise in policy interpretation. Your task is to provide precise, accurate answers based on the provided document context.
+        return f"""You are an expert insurance and legal document analyst with deep expertise in policy interpretation. Your task is to provide precise, accurate answers based on the provided document context. If the context is generic (like a PDF feature brochure), still identify the document type and summarize its contents from the provided chunks.
 
 DOCUMENT CONTEXT:
 {context}
@@ -128,7 +128,7 @@ QUALITY STANDARDS:
         for attempt in range(max_retries):
             try:
                 loop = asyncio.get_event_loop()
-                response = await loop.run_in_executor(
+            response = await loop.run_in_executor(
                     None,
                     lambda: self.model.generate_content(prompt)
                 )
@@ -155,9 +155,17 @@ QUALITY STANDARDS:
             reasoning_match = re.search(r'Reasoning:\s*(.+?)(?=\n|$)', response, re.IGNORECASE | re.DOTALL)
             
             # Extract values
-            answer = answer_match.group(1).strip() if answer_match else "Unable to determine answer from document."
-            source_clause = source_match.group(1).strip() if source_match else "No specific clause identified."
-            reasoning = reasoning_match.group(1).strip() if reasoning_match else "Based on document analysis."
+            answer = answer_match.group(1).strip() if answer_match else ""
+            source_clause = source_match.group(1).strip() if source_match else ""
+            reasoning = reasoning_match.group(1).strip() if reasoning_match else ""
+
+            # If the model didn't follow the exact format, try a soft summary fallback
+            if not answer:
+                # Build a minimal summary from chunks
+                snippet = " ".join(chunks[:2])[:500]
+                answer = f"Summary based on document context: {snippet}..."
+                source_clause = source_clause or snippet
+                reasoning = reasoning or "Derived from retrieved chunks due to unstructured model response."
             
             # Validate and improve source clause if needed
             if source_clause and source_clause != "No specific clause identified.":
