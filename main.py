@@ -87,7 +87,9 @@ async def root():
     return {
         "message": "HackRx 6.0 - Document Q&A API",
         "status": "running",
-        "endpoint": "/hackrx/run"
+        "endpoint": "/hackrx/run",
+        "public": True,
+        "auth_test": "API is accessible without authentication"
     }
 
 @app.post("/hackrx/run", response_model=HackRxResponse)
