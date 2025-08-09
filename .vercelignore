@@ -1,0 +1,31 @@
+# Virtual environment
+venv/
+__pycache__/
+
+# Development and testing files
+debug_test.py
+test_*.py
+test_*.txt
+
+# Documentation and setup files
+README.md
+SETUP_INSTRUCTIONS.md
+VERCEL_DEPLOYMENT.md
+env_template.txt
+
+# Alternative deployment configs
+Procfile
+render.yaml
+runtime.txt
+
+# Alternative requirements files
+requirements_minimal.txt
+requirements_simple.txt
+
+# System files
+.DS_Store
+.env
+
+# Git
+.git/
+.gitignore

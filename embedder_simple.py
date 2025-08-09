@@ -1,30 +1,82 @@
 """
-Simple embedding and vector search module using basic text similarity.
-Handles text chunking and similarity search without external API calls.
+Ultra-lightweight embedding and vector search module using pure numpy.
+Handles text chunking and similarity search without heavy dependencies.
 """
 import numpy as np
 import re
-from typing import List, Tuple, Optional
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import math
+from collections import Counter
+from typing import List, Tuple, Optional, Dict
 
 from utils import split_text_into_chunks, count_tokens
 
 class SimpleEmbedder:
-    """Handles text similarity search using TF-IDF"""
+    """Handles text similarity search using lightweight TF-IDF"""
     
     def __init__(self):
-        self.vectorizer = TfidfVectorizer(
-            max_features=1000,
-            stop_words='english',
-            ngram_range=(1, 2)
-        )
         self.chunks = []
+        self.vocabulary = {}
         self.tfidf_matrix = None
+        self.stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'}
     
+    def _tokenize(self, text: str) -> List[str]:
+        """Simple tokenization and stop word removal"""
+        words = re.findall(r'\b\w+\b', text.lower())
+        return [w for w in words if w not in self.stop_words and len(w) > 2]
+    
+    def _build_vocabulary(self, chunks: List[str]) -> Dict[str, int]:
+        """Build vocabulary from all chunks"""
+        all_words = set()
+        for chunk in chunks:
+            words = self._tokenize(chunk)
+            all_words.update(words)
+        return {word: idx for idx, word in enumerate(sorted(all_words))}
+    
+    def _compute_tf_idf(self, chunks: List[str]) -> np.ndarray:
+        """Compute TF-IDF matrix using pure numpy"""
+        vocab_size = len(self.vocabulary)
+        num_docs = len(chunks)
+        
+        # Initialize TF-IDF matrix
+        tfidf_matrix = np.zeros((num_docs, vocab_size))
+        
+        # Document frequency for each term
+        df = np.zeros(vocab_size)
+        
+        # Compute term frequencies and document frequencies
+        for doc_idx, chunk in enumerate(chunks):
+            words = self._tokenize(chunk)
+            word_counts = Counter(words)
+            doc_length = len(words)
+            
+            # Track which terms appear in this document
+            terms_in_doc = set()
+            
+            for word, count in word_counts.items():
+                if word in self.vocabulary:
+                    term_idx = self.vocabulary[word]
+                    # TF: term frequency
+                    tf = count / doc_length if doc_length > 0 else 0
+                    tfidf_matrix[doc_idx, term_idx] = tf
+                    
+                    # Track for DF calculation
+                    terms_in_doc.add(term_idx)
+            
+            # Update document frequencies
+            for term_idx in terms_in_doc:
+                df[term_idx] += 1
+        
+        # Compute IDF and final TF-IDF
+        for term_idx in range(vocab_size):
+            if df[term_idx] > 0:
+                idf = math.log(num_docs / df[term_idx])
+                tfidf_matrix[:, term_idx] *= idf
+        
+        return tfidf_matrix
+
     async def create_faiss_index(self, text: str):
         """
-        Create similarity index from text content.
+        Create similarity index from text content using lightweight TF-IDF.
         
         Args:
             text: Input text to process
@@ -42,9 +94,13 @@ class SimpleEmbedder:
             
             print(f"📦 Created {len(self.chunks)} optimized chunks")
             
+            # Build vocabulary
+            print("📚 Building vocabulary...")
+            self.vocabulary = self._build_vocabulary(self.chunks)
+            
             # Create TF-IDF vectors
-            print("🧠 Creating TF-IDF vectors...")
-            self.tfidf_matrix = self.vectorizer.fit_transform(self.chunks)
+            print("🧠 Creating lightweight TF-IDF vectors...")
+            self.tfidf_matrix = self._compute_tf_idf(self.chunks)
             
             print(f"✅ TF-IDF index created with {len(self.chunks)} vectors")
             return self.tfidf_matrix
@@ -53,6 +109,34 @@ class SimpleEmbedder:
             print(f"❌ Error creating similarity index: {str(e)}")
             raise
     
+    def _cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """Compute cosine similarity between two vectors"""
+        dot_product = np.dot(vec1, vec2)
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+        
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        
+        return dot_product / (norm1 * norm2)
+
+    def _query_to_vector(self, query: str) -> np.ndarray:
+        """Convert query to TF-IDF vector"""
+        words = self._tokenize(query)
+        word_counts = Counter(words)
+        query_length = len(words)
+        
+        query_vector = np.zeros(len(self.vocabulary))
+        
+        for word, count in word_counts.items():
+            if word in self.vocabulary:
+                term_idx = self.vocabulary[word]
+                tf = count / query_length if query_length > 0 else 0
+                # Use average IDF from training data
+                query_vector[term_idx] = tf
+        
+        return query_vector
+
     async def search_similar_chunks(
         self, 
         index, 
@@ -60,7 +144,7 @@ class SimpleEmbedder:
         top_k: int = 5
     ) -> List[str]:
         """
-        Search for similar chunks using TF-IDF similarity.
+        Search for similar chunks using lightweight TF-IDF similarity.
         
         Args:
             index: TF-IDF matrix
@@ -72,10 +156,17 @@ class SimpleEmbedder:
         """
         try:
             # Transform query to TF-IDF vector
-            query_vector = self.vectorizer.transform([query])
+            query_vector = self._query_to_vector(query)
             
-            # Calculate similarities
-            similarities = cosine_similarity(query_vector, self.tfidf_matrix).flatten()
+            # Calculate similarities with all chunks
+            similarities = []
+            for i in range(self.tfidf_matrix.shape[0]):
+                chunk_vector = self.tfidf_matrix[i]
+                similarity = self._cosine_similarity(query_vector, chunk_vector)
+                similarities.append(similarity)
+            
+            # Convert to numpy array for easier manipulation
+            similarities = np.array(similarities)
             
             # Get top-k indices
             top_indices = similarities.argsort()[-top_k:][::-1]
@@ -115,5 +206,6 @@ class SimpleEmbedder:
             "index_created": True,
             "num_vectors": self.tfidf_matrix.shape[0],
             "feature_dimension": self.tfidf_matrix.shape[1],
-            "index_type": "TF-IDF"
+            "vocabulary_size": len(self.vocabulary),
+            "index_type": "Lightweight TF-IDF"
         }
