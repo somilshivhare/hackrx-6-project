@@ -4,25 +4,9 @@
     {
       "src": "main.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "api/health.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "api/process.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
-    {
-      "src": "/health",
-      "dest": "/api/health.py"
-    },
-    {
-      "src": "/hackrx/run",
-      "dest": "/api/process.py"
-    },
     {
       "src": "/(.*)",
       "dest": "/main.py"

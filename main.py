@@ -184,7 +184,8 @@ async def health_check():
     return {
         "status": "healthy",
         "google_api_key_configured": bool(os.getenv("GOOGLE_API_KEY")),
-        "timestamp": "2024-01-01T00:00:00Z"
+        "service": "hackrx-document-qa",
+        "version": "1.0.0"
     }
 
 if __name__ == "__main__":
