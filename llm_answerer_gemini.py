@@ -18,10 +18,10 @@ class LLMAnswerer:
     """Handles Gemini-based answer generation from document chunks"""
     
     def __init__(self):
-        # Initialize Gemini client
-        api_key = os.getenv("GOOGLE_API_KEY")
+        # Initialize Gemini client (support alternate env var name used in Vercel)
+        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY2")
         if not api_key:
-            raise ValueError("GOOGLE_API_KEY not found in environment variables")
+            raise ValueError("GOOGLE_API_KEY/GOOGLE_API_KEY2 not found in environment variables")
         
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
